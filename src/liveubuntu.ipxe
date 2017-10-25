@@ -1,0 +1,44 @@
+#!ipxe
+
+# Debian Live
+# https://www.debian.org/devel/debian-live/
+
+goto ${menu}
+
+:liveubuntu
+set os Ubuntu Live
+menu ${os}
+item --gap Versions
+item precise ${space} ${os} 12.04 LTS (Precise Pangolin)
+item trusty ${space} ${os} 14.04 LTS (Trusty Tahr)
+item xenial ${space} ${os} 16.04 LTS (Xenial Xerus)
+item zesty ${space} ${os} 17.04 (Zesty Zapus)
+item artful ${space} ${os} 17.10 (Artful Aardvark)
+choose liveubuntu_version || goto liveubuntu_exit
+
+:liveubuntu_flavor
+menu ${os} ${liveubuntu_version}
+item --gap Flavors
+item desktop ${space} Desktop
+item server ${space} Server
+choose --default ${type} flavor || goto liveubuntu
+echo ${cls}
+goto liveubuntu_boot
+
+#TODO: if arch is x86_64, set to amd64
+
+:liveubuntu_boot
+set webboot_host archive.ubuntu.com
+set liveubuntu_url http://${webboot_host}/ubuntu/dists/${liveubuntu_version}/main/installer-amd64/current/images/netboot/
+imgfree
+kernel ${liveubuntu_url}/ubuntu-installer/amd64/linux boot=live config hooks=filesystem username=live noeject ${console}
+module ${liveubuntu_url}/boot.img.gz
+# used to resolve DNS
+module http://${boot_domain}/live-helpers/debian/libresolv.so.2 /lib/libresolv.so.2
+module http://${boot_domain}/live-helpers/debian/libnss_dns.so.2 /lib/libnss_dns.so.2
+boot
+goto liveubuntu_exit
+
+:liveubuntu_exit
+clear menu
+exit 0
